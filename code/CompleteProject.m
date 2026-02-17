@@ -2,12 +2,12 @@ clear;clc;
 
 % "http://marsyas.info/downloads/datasets.html" dataset is available in this given website
 
-notefolder='genres\blues\';
-listname=dir (fullfile([notefolder,'*.wav']));
+notefolder=fullfile('genres','blues');
+listname=dir(fullfile(notefolder,'*.wav'));
 coeffs1=zeros(length(listname),186);
 
 for k=1:length(listname)
-    file_name=strcat(notefolder,listname(k).name);
+    file_name=fullfile(notefolder,listname(k).name);
     [x, fs]=audioread(file_name);
     
     aFE=audioFeatureExtractor('SpectralDescriptorInput',"melSpectrum",'SampleRate',fs,"mfcc",true,"spectralCentroid",true,"spectralRolloffPoint",true);
@@ -21,12 +21,12 @@ for k=1:length(listname)
    
 end
 %%
-notefolder='genres\metal\';
-listname=dir (fullfile([notefolder,'*.wav']));
+notefolder=fullfile('genres','metal');
+listname=dir(fullfile(notefolder,'*.wav'));
 coeffs2=zeros(length(listname),186);
 
 for k=1:length(listname)
-    file_name=strcat(notefolder,listname(k).name);
+    file_name=fullfile(notefolder,listname(k).name);
     [x, fs]=audioread(file_name);
 
     aFE=audioFeatureExtractor('SpectralDescriptorInput',"melSpectrum",'SampleRate',fs,"mfcc",true,"spectralCentroid",true,"spectralRolloffPoint",true);
@@ -40,12 +40,12 @@ for k=1:length(listname)
     
 end
 %%
-notefolder='genres\country\';
-listname=dir (fullfile([notefolder,'*.wav']));
+notefolder=fullfile('genres','country');
+listname=dir(fullfile(notefolder,'*.wav'));
 coeffs3=zeros(length(listname),186);
 
 for k=1:length(listname)
-    file_name=strcat(notefolder,listname(k).name);
+    file_name=fullfile(notefolder,listname(k).name);
     [x, fs]=audioread(file_name);
 
     aFE=audioFeatureExtractor('SpectralDescriptorInput',"melSpectrum",'SampleRate',fs,"mfcc",true,"spectralCentroid",true,"spectralRolloffPoint",true);
@@ -59,12 +59,12 @@ for k=1:length(listname)
     
 end
 %%
-notefolder='genres\pop\';
-listname=dir (fullfile([notefolder,'*.wav']));
+notefolder=fullfile('genres','pop');
+listname=dir(fullfile(notefolder,'*.wav'));
 coeffs4=zeros(length(listname),186);
 
 for k=1:length(listname)
-    file_name=strcat(notefolder,listname(k).name);
+    file_name=fullfile(notefolder,listname(k).name);
     [x, fs]=audioread(file_name);
 
     aFE=audioFeatureExtractor('SpectralDescriptorInput',"melSpectrum",'SampleRate',fs,"mfcc",true,"spectralCentroid",true,"spectralRolloffPoint",true);
@@ -79,14 +79,20 @@ for k=1:length(listname)
 end
 %%
 X=[coeffs1;coeffs2;coeffs3;coeffs4]; %combining feature vectors
-y=[1*ones(100,1);2*ones(100,1);3*ones(100,1);4*ones(100,1)]; %labeling
+y=[ones(size(coeffs1,1),1); ...
+   2*ones(size(coeffs2,1),1); ...
+   3*ones(size(coeffs3,1),1); ...
+   4*ones(size(coeffs4,1),1)]; %labeling
 
 %split into train and test
-indices=randperm(400);
-Xtrain=X(indices(1:360),:);
-Xtest=X(indices(361:end),:);
-ytrain=y(indices(1:360),:);
-ytest=y(indices(361:end),:);
+sample_count = size(X,1);
+train_count = floor(0.9 * sample_count);
+indices = randperm(sample_count);
+
+Xtrain = X(indices(1:train_count),:);
+Xtest = X(indices(train_count+1:end),:);
+ytrain = y(indices(1:train_count),:);
+ytest = y(indices(train_count+1:end),:);
 
 %%
 %OnevsAll Logistic Regression with Regularization
@@ -95,7 +101,7 @@ num_labels=4;
 lambda1=1;%for regularization
 
 [all_theta] = oneVsAll(Xtrain, ytrain, num_labels, lambda1);
-%iterasyon sayýsý deðiþtikçe sonuç deðiþiyor
+%iterasyon says deitike sonu deiiyor
 
 predLR = predictOneVsAll(all_theta, Xtest);
 fprintf('\nTest Accuracy: %f\n', mean(double(predLR == ytest)) * 100);
